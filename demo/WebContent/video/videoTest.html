@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>视频上传测试</title>
+    <link rel="stylesheet" href="../video/css/video.css">
+    <script type="text/javascript" src="../public/common.js"></script>
+</head>
+<body>
+<div class="layout-body" id="videoInfo" v-cloak>
+    <layout-header></layout-header>
+    <div id="wrap">
+        <layout-sider></layout-sider>
+        <div class="layout-main">
+            <!-- 多条件查询 -->
+            <div class="qry">
+                <div class="first">
+                    <span class="juinline">
+                        <el-input class="select_input" type="text" placeholder="搜索视频"
+                                  v-model="sVideoInfo.title" size="medium"></el-input>
+                    </span>
+                </div>
+                <div class="butLeft">
+                    <i-button type="primary" size="large" shape="circle" @click = "upload()">选择文件</i-button>
+                </div>
+                <div class="butRight">
+                    <i-button type="primary" icon="ios-search" @click="filter">搜索</i-button>
+                    <i-button @click="clearSVideoInfo">清空</i-button>
+                </div>
+            </div>
+
+            <!-- Excel文件上传模态框 -->
+            <Modal v-model="openUploadModal" title="请上传文件" :mask-closable="false"
+                   @on-ok="submitTextList()"
+                   @on-cancel="openUploadModal=false">
+                <div>
+                    <center>
+                        <p>取消时，还要清除文件信息</p>
+                        <el-upload class="avatar-uploader el-upload--text"
+                                   :show-file-list="true"
+                                   :format="['mp4','wmv','avi','rmvb']"
+                                   :before-upload="beforeUploadVideo"
+                                   :on-progress="uploadVideoProcess"
+
+                                   :on-exceed="handleExceed"
+                                   :on-change="handleChangeText"
+                                   :on-remove="handleRemoveText"
+                                   :before-remove="beforeRemoveText"
+                                   :file-list="textFileList">
+                            <video v-if="this.uploadUrl !='' && !videoFlag"
+                                 class="avatar video-avatar"
+                                controls="controls">您的浏览器不支持视频播放</video>
+                            <i v-else-if="this.uploadUrl =='' && !videoFlag"
+                                   class="el-icon-plus avatar-uploader-icon"></i>
+                                <el-progress v-if="videoFlag == true"
+                                             type="circle"
+                                             :percentage="videoUploadPercent"
+                                             style="margin-top:30px;"></el-progress>
+                                <el-button class="video-btn"
+                                           slot="trigger"
+                                           size="small"
+                                           v-if="isShowUploadVideo"
+                                           type="primary">选取文件</el-button>
+                        </el-upload>
+                        <P v-if="isShowUploadVideo"
+                           class="text">请保证视频格式正确，且不超过20M
+                        </P>
+                        <p>视频描述
+                            <el-input class="input" type="textarea" maxlength="2000"
+                                      show-word-limit
+                                      :autosize="{minRows: 2,maxRows: 4}"
+                                      v-model.trim="videoInfo.description"/>
+                        </p>
+
+                    </center>
+
+                </div>
+            </Modal>
+
+            <div>
+                <div class="row clearfix">
+                    <div class="col-md-12 text-center">
+                        <hr>
+                        <canvas id="canvasBarrage"></canvas>
+                        <video id="videoBarrage" :src="url" v-model="videoInfo.url" controls="controls"></video>
+                        <input type="color" style="display: none">
+                        <div class="row clearfix">
+                            <div class="col-xs-12 col-md-8 col-md-offset-2 text-center">
+                                <div class="input-group">
+                        <span class="input-group-addon"
+                              :style="'font-weight: bold; background-color: ' + reverseColor + '; color: ' + nowColor">
+                            弹幕颜色
+                        </span>
+                        <span class="input-group-btn">
+                            <el-select v-model="barrageInfo.color" class="select_input" title="弹幕颜色"
+                                       filterable clearable size="medium">
+                                    <el-option
+                                            v-for="(c, key) in colors"
+                                            :value="key" :key="key"
+                                            :label="key">{{key}}
+                                    </el-option>
+                            </el-select>
+                        </span>
+                        <el-input class="select_input" type="text" placeholder="弹幕内容" @keyup.enter="sendBarrage"
+                                  filterable clearable  v-model="barrageInfo.content" minlength="1" maxlength="250"></el-input>
+                        <span class="input-group-btn">
+                            <el-select v-model="barrageInfo.position" class="select_input" title="弹幕位置"
+                                       filterable clearable size="medium">
+                                    <el-option
+                                            v-for="(c, key) in positions"
+                                            :value="key" :key="key"
+                                            :label="key">{{key}}
+                                    </el-option>
+                            </el-select>
+                        </span>
+                        <span class="input-group-btn">
+                            <i-button @click="sendBarrage">发送</i-button>
+                        </span>
+                                </div>
+                                <p :class="['text-center', 'alert', barrageMsg === '发送成功' ? 'alert-success' : 'alert-danger']"
+                                   v-if="barrageMsg.length > 0">
+                                    {{barrageMsg}}
+                                </p>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+                <div class="row clearfix">
+                    <div class="col-sm-4 text-right">
+                        <i-button :class="['btn', 'btn-primary', 'btn-lg', liked ? 'disabled' : '']" @click="getlike">
+                            {{liked ? '(^ω^) 赞过啦！' : '(๑•̀ㅂ•́)و✧ 赞！'}}
+                        </i-button>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="row clearfix">
+                            <div class="col-sm-4">
+                                <p>
+                                    播放量：{{videoInfo.countPlay + 1}}
+                                </p>
+                                <p>
+                                    点赞量：{{videoInfo.countLike}}
+                                </p>
+                            </div>
+                            <div class="col-sm-8">
+                                <p>
+                                    上传时间：{{videoInfo.uploadTime.toLocaleString()}}
+                                </p>
+                                <p>
+                                    上传用户：{{videoInfo.uploadUsername}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row clearfix">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                                <h2>视频简介</h2>
+                                <blockquote>
+                                    <p style="overflow-wrap: break-word">{{videoInfo.description}}</p>
+                                </blockquote>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
+                <div class="row clearfix">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                                <h2>评论</h2>
+                                <el-input class="input" type="textarea" v-model="commentInfo.content" placeholder="评论内容"
+                                          maxlength="4000" :autosize="{minRows: 2,maxRows: 4}"
+                                          show-word-limit></el-input>
+                                <p :class="['text-center', 'alert', commentMsg === '发送成功' ? 'alert-success' : 'alert-danger']"
+                                   v-if="commentMsg.length > 0">
+                                    {{commentMsg}}
+                                </p>
+                                <i-button @click="getsendComment">发送</i-button>
+                                <br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="row clearfix">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="row clearfix">
+                            <div class="col-md-12">
+                                <h2>评论区</h2>
+                                <br>
+                            </div>
+                        </div>
+                        <template >
+                            <div class="row clearfix">
+                                <div class="col-md-12">
+                                    <template v-for="(comment, idx) in comments">
+                                        <div class="row clearfix comment">
+                                            <div class="col-xs-4 username">{{comment.userName}}  {{comment.sendTime}}</div>
+                                            <div class="col-xs-2 col-xs-offset-1 like text-right">
+                                    			<span @click="likeComment" 
+	                                    			:id="'comment-' + idx" 
+	                                    			style="cursor: pointer"  
+	                                    			v-model="commentInfo.countLike">
+                                        				👍 {{comment.countLike}}
+                                    			</span>
+                                                <span :id="'comment-liked-' + idx" style="display: none; cursor: default">
+                                        				👍 {{comment.countLike}}
+                                   				</span>
+                                   				<span v-text="comment.content"></span>
+                                   				<span v-if="comment.userId === 19" class="col-xs-12 text-right">
+	                                                <button class="btn btn-danger" @click="deleteComment"
+	                                                        :id="'comment-delete-' + idx">删除</button>
+                                            	</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div class="row clearfix">
+                                        <br><br>
+                                        <div class="div-inline-right">
+						                    <!-- current:当前页码  total:数据总数  page-size:每页条数-->
+						                    <Page :current="pageNum" :total="totalNum" :page-size="pageSize"
+						                          @on-change="onPageChange" @on-page-size-change="onPageSizeChange"
+						                          show-total show-elevator show-sizer></Page>
+						                </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template>
+                            <div class="row clearfix">
+                                <div class="col-md-12 text-center">
+                                    <h1 class="text-center">没有更多评论</h1>
+                                    <br>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+
+            </div>
+        <div style="clear:both"></div>
+    </div>
+    <layout-footer></layout-footer>
+</div>
+<script type="text/javascript" src="../video/js/videoTest.js"></script>
+</body>
+</html>

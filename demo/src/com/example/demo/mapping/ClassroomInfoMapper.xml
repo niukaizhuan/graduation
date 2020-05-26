@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.ClassroomInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.ClassroomInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="teach_build_number" property="teachBuildNumber" jdbcType="VARCHAR" />
+    <result column="classroom_number" property="classroomNumber" jdbcType="VARCHAR" />
+    <result column="capacity" property="capacity" jdbcType="INTEGER" />
+    <result column="classroom_attr" property="classroomAttr" jdbcType="CHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_date" property="stateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, teach_build_number, classroom_number, capacity, classroom_attr, remark, state,
+    state_date
+  </sql>
+
+  <select id="listClassroomInfo" resultMap="BaseResultMap">
+    SELECT
+		    id,
+		    classroom_number
+		FROM
+		    classroom_info
+		WHERE
+		    state = 'A'
+		ORDER BY
+		    id
+  </select>
+
+  <select id="listByClassroomInfo" parameterType="com.example.demo.entity.ClassroomInfo"
+          resultMap="BaseResultMap">
+    SELECT
+    ci.id,
+    ci.classroom_number,
+    ci.teach_build_number,
+    ci.capacity,
+    ci.remark,
+    ci.classroom_attr,
+    tbi.teach_build_name AS teachBuildName
+    FROM
+    classroom_info ci
+    INNER JOIN teach_build_info tbi ON tbi.teach_build_number = ci.teach_build_number
+    WHERE
+    ci.state = 'A'
+    and  tbi.state = 'A'
+    <if test="classroomNumber != null">
+      and LOCATE(#{classroomNumber},ci.classroom_number)
+    </if>
+    <if test="teachBuildNumber != null">
+      and LOCATE(#{teachBuildNumber},ci.teach_build_number)
+    </if>
+    ORDER BY ci.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from classroom_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update classroom_info
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE classroom_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.ClassroomInfo" >
+    insert into classroom_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="teachBuildNumber != null" >
+        teach_build_number,
+      </if>
+      <if test="classroomNumber != null" >
+        classroom_number,
+      </if>
+      <if test="capacity != null" >
+        capacity,
+      </if>
+      <if test="classroomAttr != null" >
+        classroom_attr,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="teachBuildNumber != null" >
+        #{teachBuildNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNumber != null" >
+        #{classroomNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="capacity != null" >
+        #{capacity,jdbcType=INTEGER},
+      </if>
+      <if test="classroomAttr != null" >
+        #{classroomAttr,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.ClassroomInfo" >
+    update classroom_info
+    <set >
+      <if test="teachBuildNumber != null" >
+        teach_build_number = #{teachBuildNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNumber != null" >
+        classroom_number = #{classroomNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="capacity != null" >
+        capacity = #{capacity,jdbcType=INTEGER},
+      </if>
+      <if test="classroomAttr != null" >
+        classroom_attr = #{classroomAttr,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="countByClassroomInfo" parameterType="com.example.demo.entity.ClassroomInfo"
+          resultType="java.lang.Integer">
+    SELECT
+    count(*)
+    FROM
+    classroom_info
+    WHERE
+    state = 'A'
+    AND classroom_number = #{classroomNumber,jdbcType=VARCHAR}
+    <if test="id != null">
+      AND id != #{id,jdbcType=INTEGER}
+    </if>
+  </select>
+
+
+  <select id="selectByTeachBuildNo" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select
+    <include refid="Base_Column_List" />
+    from classroom_info
+     where teach_build_number = #{teachBuildNumber,jdbcType=VARCHAR}
+  </select>
+</mapper>

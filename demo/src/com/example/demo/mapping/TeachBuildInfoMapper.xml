@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.TeachBuildInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.TeachBuildInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="teach_build_name" property="teachBuildName" jdbcType="VARCHAR" />
+    <result column="teach_build_number" property="teachBuildNumber" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="created_date" property="createdDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, teach_build_name, teach_build_number, remark, state, created_date
+  </sql>
+
+  <select id="listTeachBuildInfo" resultMap="BaseResultMap">
+    SELECT
+      id,teach_build_name,teach_build_number
+		FROM
+		    teach_build_info
+		WHERE
+		    state = 'A'
+		ORDER BY
+		    id
+  </select>
+
+
+  <select id="listByTeachBuildInfo" parameterType="com.example.demo.entity.TeachBuildInfo"
+          resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+    FROM
+    teach_build_info
+    WHERE
+    state = 'A'
+    <if test="teachBuildName != null">
+      and LOCATE(#{teachBuildName},teach_build_name)
+    </if>
+    <if test="teachBuildNumber != null">
+      and LOCATE(#{teachBuildNumber},teach_build_number)
+    </if>
+    ORDER BY id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from teach_build_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update teach_build_info
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE teach_build_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.TeachBuildInfo" >
+    insert into teach_build_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="teachBuildName != null" >
+        teach_build_name,
+      </if>
+      <if test="teachBuildNumber != null" >
+        teach_build_number,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="teachBuildName != null" >
+        #{teachBuildName,jdbcType=VARCHAR},
+      </if>
+      <if test="teachBuildNumber != null" >
+        #{teachBuildNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.TeachBuildInfo" >
+    update teach_build_info
+    <set >
+      <if test="teachBuildName != null" >
+        teach_build_name = #{teachBuildName,jdbcType=VARCHAR},
+      </if>
+      <if test="teachBuildNumber != null" >
+        teach_build_number = #{teachBuildNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="countByTeachBuildInfo" parameterType="com.example.demo.entity.TeachBuildInfo"
+          resultType="java.lang.Integer">
+    SELECT
+    count(*)
+    FROM
+    teach_build_info
+    WHERE
+    state = 'A'
+    AND teach_build_number = #{teachBuildNumber,jdbcType=VARCHAR}
+    <if test="id != null">
+      AND id != #{id,jdbcType=INTEGER}
+    </if>
+  </select>
+
+</mapper>

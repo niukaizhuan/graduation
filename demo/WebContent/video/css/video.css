@@ -1,0 +1,117 @@
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+    border-color: #409eff;
+}
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+}
+.avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+}
+.video-avatar {
+    width: 100px;
+    height: 50px;
+}
+
+ .comment {
+    border: none;
+    border-top: 1px #000000 dashed;
+    padding: 20px;
+    font-size: 18px;
+    overflow-wrap: break-word;
+}
+
+.comment .username {
+    font-weight: bold;
+}
+
+.comment .sendtime {
+    font-style: italic;
+}
+
+.comment .like {
+    user-select: none;
+}
+
+.comment .content {
+    font-size: 24px;
+}
+
+#canvasBarrage {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@media screen and (min-width: 1281px) {
+    #canvasBarrage {
+        width: 960px;
+        height: 540px;
+    }
+
+    #videoBarrage {
+        width: 960px;
+        height: 540px;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    #canvasBarrage {
+        width: 800px;
+        height: 450px;
+    }
+
+    #videoBarrage {
+        width: 800px;
+        height: 450px;
+    }
+}
+
+@media screen and (max-width: 1080px) {
+    #canvasBarrage {
+        width: 640px;
+        height: 360px;
+    }
+
+    #videoBarrage {
+        width: 640px;
+        height: 360px;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    #canvasBarrage {
+        width: 480px;
+        height: 270px;
+    }
+
+    #videoBarrage {
+        width: 480px;
+        height: 270px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #canvasBarrage {
+        width: 320px;
+        height: 180px;
+    }
+
+    #videoBarrage {
+        width: 320px;
+        height: 180px;
+    }
+}

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.ClassTaskMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.ClassTask" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="term_name" property="termName" jdbcType="VARCHAR" />
+    <result column="school_no" property="schoolNo" jdbcType="VARCHAR" />
+    <result column="class_no" property="classNo" jdbcType="VARCHAR" />
+    <result column="course_no" property="courseNo" jdbcType="VARCHAR" />
+    <result column="staff_no" property="staffNo" jdbcType="VARCHAR" />
+    <result column="course_attr" property="courseAttr" jdbcType="VARCHAR" />
+    <result column="student_sum" property="studentSum" jdbcType="INTEGER" />
+    <result column="weeks_sum" property="weeksSum" jdbcType="INTEGER" />
+    <result column="weeks_number" property="weeksNumber" jdbcType="INTEGER" />
+    <result column="class_time" property="classTime" jdbcType="VARCHAR" />
+    <result column="is_fix" property="isFix" jdbcType="CHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_date" property="stateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, term_name, school_no, class_no, course_no, staff_no, course_attr, student_sum, 
+    weeks_sum, weeks_number, class_time, is_fix, remark, state, state_date
+  </sql>
+
+  <select id="listByClassTask" parameterType="com.example.demo.entity.ClassTask"
+          resultMap="BaseResultMap">
+        SELECT
+        ct.id,
+        ct.term_name,
+        ct.school_no,
+        si.school_name AS schoolName,
+        ct.class_no,
+        ci.class_name AS className,
+        ct.course_no,
+        coi.course_name AS courseName,
+        coi.course_code AS courseCode,
+        ct.staff_no,
+        sti.staff_name AS staffName,
+        sti.staff_code AS staffCode,
+        ct.course_attr,
+        ty.type_name AS typeName,
+        ct.student_sum,
+        ct.weeks_number,
+        ct.weeks_sum,
+        ct.is_fix,
+        ct.class_time,
+        ct.remark
+    FROM
+        class_task ct
+    INNER JOIN year_term yt ON yt.term_name = ct.term_name
+    INNER JOIN school_info si ON si.school_no = ct.school_no
+    INNER JOIN class_info ci ON ci.class_no = ct.class_no
+    INNER JOIN course_info coi ON coi.course_code = ct.course_no
+    INNER JOIN staff_info sti ON sti.staff_code = ct.staff_no
+    INNER JOIN course_type ty ON ty.type_no = ct.course_attr
+    WHERE
+        ct.state = 'A'
+    AND yt.state = 'A'
+    AND si.state = 'A'
+    AND ci.state = 'A'
+    AND coi.state = 'A'
+    AND sti.state = 'A'
+    AND ty.state = 'A'
+    <if test="termName != null">
+      and LOCATE(#{termName},ct.term_name)
+    </if>
+    <if test="schoolNo != null">
+      and LOCATE(#{schoolNo},ct.school_no)
+    </if>
+    <if test="classNo != null">
+      and LOCATE(#{classNo},ct.class_no)
+    </if>
+    <if test="courseNo != null">
+      and LOCATE(#{courseNo},ct.course_no)
+    </if>
+    <if test="staffNo != null">
+      and LOCATE(#{staffNo},ct.staff_no)
+    </if>
+    <if test="courseAttr != null">
+      and LOCATE(#{courseAttr},ct.course_attr)
+    </if>
+    ORDER BY ct.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from class_task
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update class_task
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE class_task
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.ClassTask" >
+    insert into class_task
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="termName != null" >
+        term_name,
+      </if>
+      <if test="schoolNo != null" >
+        school_no,
+      </if>
+      <if test="classNo != null" >
+        class_no,
+      </if>
+      <if test="courseNo != null" >
+        course_no,
+      </if>
+      <if test="staffNo != null" >
+        staff_no,
+      </if>
+      <if test="courseAttr != null" >
+        course_attr,
+      </if>
+      <if test="studentSum != null" >
+        student_sum,
+      </if>
+      <if test="weeksSum != null" >
+        weeks_sum,
+      </if>
+      <if test="weeksNumber != null" >
+        weeks_number,
+      </if>
+      <if test="classTime != null" >
+        class_time,
+      </if>
+      <if test="isFix != null" >
+        is_fix,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="termName != null" >
+        #{termName,jdbcType=VARCHAR},
+      </if>
+      <if test="schoolNo != null" >
+        #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="staffNo != null" >
+        #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseAttr != null" >
+        #{courseAttr,jdbcType=VARCHAR},
+      </if>
+      <if test="studentSum != null" >
+        #{studentSum,jdbcType=INTEGER},
+      </if>
+      <if test="weeksSum != null" >
+        #{weeksSum,jdbcType=INTEGER},
+      </if>
+      <if test="weeksNumber != null" >
+        #{weeksNumber,jdbcType=INTEGER},
+      </if>
+      <if test="classTime != null" >
+        #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="isFix != null" >
+        #{isFix,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.ClassTask" >
+    update class_task
+    <set >
+      <if test="termName != null" >
+        term_name = #{termName,jdbcType=VARCHAR},
+      </if>
+      <if test="schoolNo != null" >
+        school_no = #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        class_no = #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        course_no = #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="staffNo != null" >
+        staff_no = #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseAttr != null" >
+        course_attr = #{courseAttr,jdbcType=VARCHAR},
+      </if>
+      <if test="studentSum != null" >
+        student_sum = #{studentSum,jdbcType=INTEGER},
+      </if>
+      <if test="weeksSum != null" >
+        weeks_sum = #{weeksSum,jdbcType=INTEGER},
+      </if>
+      <if test="weeksNumber != null" >
+        weeks_number = #{weeksNumber,jdbcType=INTEGER},
+      </if>
+      <if test="classTime != null" >
+        class_time = #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="isFix != null" >
+        is_fix = #{isFix,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="selectByColumnName" resultType="java.lang.String" parameterType="java.lang.String">
+      select distinct  ${columnName} from class_task
+  </select>
+  
+  <select id="listByTermName" resultMap="BaseResultMap" parameterType="com.example.demo.entity.ClassTask">
+    select <include refid="Base_Column_List" />
+    from class_task
+    where term_name = #{termName,jdbcType=VARCHAR}
+  </select>
+</mapper>

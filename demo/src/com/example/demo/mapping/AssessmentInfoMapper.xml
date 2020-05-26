@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.AssessmentInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.AssessmentInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="final_examination" property="finalExamination" jdbcType="INTEGER" />
+    <result column="practical_examination" property="practicalExamination" jdbcType="INTEGER" />
+    <result column="experimental_examination" property="experimentalExamination" jdbcType="INTEGER" />
+    <result column="homework_assessment" property="homeworkAssessment" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_data" property="stateData" jdbcType="TIMESTAMP" />
+    <result column="created_data" property="createdData" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, final_examination, practical_examination, experimental_examination, homework_assessment, 
+    remark, state, state_data, created_data
+  </sql>
+
+  <select id="listAssessmentInfo" resultMap="BaseResultMap">
+	   SELECT
+		    id,
+		    final_examination,
+		    practical_examination,
+		    experimental_examination,
+		    homework_assessment
+		FROM
+		    assessment_info
+		WHERE
+		    state = 'A'
+		ORDER BY
+		    id
+	</select>
+
+  <select id="listByAssessmentInfo" parameterType="com.example.demo.entity.AssessmentInfo"
+          resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+    from assessment_info
+    WHERE
+    s.state = 'A'
+    ORDER BY id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from assessment_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    UPDATE assessment_info
+		SET state = 'X'
+		WHERE
+		  id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE assessment_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.AssessmentInfo"
+          useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    insert into assessment_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="finalExamination != null" >
+        final_examination,
+      </if>
+      <if test="practicalExamination != null" >
+        practical_examination,
+      </if>
+      <if test="experimentalExamination != null" >
+        experimental_examination,
+      </if>
+      <if test="homeworkAssessment != null" >
+        homework_assessment,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="finalExamination != null" >
+        #{finalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="practicalExamination != null" >
+        #{practicalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="experimentalExamination != null" >
+        #{experimentalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="homeworkAssessment != null" >
+        #{homeworkAssessment,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.AssessmentInfo" >
+    update assessment_info
+    <set >
+      <if test="finalExamination != null" >
+        final_examination = #{finalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="practicalExamination != null" >
+        practical_examination = #{practicalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="experimentalExamination != null" >
+        experimental_examination = #{experimentalExamination,jdbcType=INTEGER},
+      </if>
+      <if test="homeworkAssessment != null" >
+        homework_assessment = #{homeworkAssessment,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

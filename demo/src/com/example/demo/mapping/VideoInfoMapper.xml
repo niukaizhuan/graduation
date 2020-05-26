@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.VideoInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.video.VideoInfo" >
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="upload_userid" property="uploadUserid" jdbcType="INTEGER" />
+    <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+    <result column="count_play" property="countPlay" jdbcType="INTEGER" />
+    <result column="count_like" property="countLike" jdbcType="INTEGER" />
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, title, url, upload_userid, upload_time, count_play, count_like, pic_url,
+    description, state
+  </sql>
+
+  <select id="listByVideoInfo" resultMap="BaseResultMap" parameterType="com.example.demo.entity.video.VideoInfo">
+    SELECT
+		vi.id,
+		vi.title,
+		vi.url,
+		vi.count_like,
+		vi.count_play,
+		vi.description,
+		vi.pic_url,
+		vi.upload_time,
+		vi.upload_userid,
+		u.user_name AS userName
+	FROM
+		video_info vi
+	INNER JOIN file_info fi ON fi.access_url = vi.url
+	INNER JOIN `user` u ON u.id = vi.upload_userid
+	WHERE
+		vi.state = 'A'
+	AND u.state = 'A'
+	AND fi.type = 'V'
+    <if test="title != null">
+      and LOCATE(#{title},vi.title)
+    </if>
+    ORDER BY vi.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from video_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectByURL" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from video_info
+    where url = #{url,jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insert" parameterType="com.example.demo.entity.video.VideoInfo" >
+    insert into video_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="url != null" >
+        url,
+      </if>
+      <if test="uploadUserid != null" >
+        upload_userid,
+      </if>
+      <if test="uploadTime != null" >
+        upload_time,
+      </if>
+      <if test="countPlay != null" >
+        count_play,
+      </if>
+      <if test="countLike != null" >
+        count_like,
+      </if>
+      <if test="picUrl != null" >
+        pic_url,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null" >
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadUserid != null" >
+        #{uploadUserid,jdbcType=INTEGER},
+      </if>
+      <if test="uploadTime != null" >
+        #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="countPlay != null" >
+        #{countPlay,jdbcType=INTEGER},
+      </if>
+      <if test="countLike != null" >
+        #{countLike,jdbcType=INTEGER},
+      </if>
+      <if test="picUrl != null" >
+        #{picUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.SubjectInfo" >
+    update video_info
+    <set >
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null" >
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadUserid != null" >
+        upload_userid = #{uploadUserid,jdbcType=INTEGER},
+      </if>
+      <if test="uploadTime != null" >
+        upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="countPlay != null" >
+        count_play = #{countPlay,jdbcType=INTEGER},
+      </if>
+      <if test="countLike != null" >
+        count_like = #{countLike,jdbcType=INTEGER},
+      </if>
+      <if test="picUrl != null" >
+        pic_url = #{picUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

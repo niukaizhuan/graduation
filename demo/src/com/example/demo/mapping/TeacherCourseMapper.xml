@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.TeacherCourseMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.TeacherCourse" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="staff_no" property="staffNo" jdbcType="INTEGER" />
+    <result column="course_no" property="courseNo" jdbcType="INTEGER" />
+    <result column="class_no" property="classNo" jdbcType="INTEGER" />
+    <result column="classroom_no" property="classroomNo" jdbcType="INTEGER" />
+    <result column="class_time" property="classTime" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_date" property="stateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, staff_no, course_no, class_no, classroom_no, class_time, remark, 
+    state, state_date
+  </sql>
+
+  <select id="listByTeacherCourse" parameterType="com.example.demo.entity.TeachBuildInfo"
+          resultMap="BaseResultMap">
+      SELECT
+        tc.id,
+        tc.staff_no,
+        si.staff_code AS staffCode,
+        si.staff_name AS staffName,
+        tc.course_no,
+        ci.course_code AS courseCode,
+        ci.course_name AS courseName,
+        tc.class_no,
+        cli.class_name AS className,
+        tc.classroom_no,
+        room.classroom_number AS classroomNumber,
+        tc.class_time,
+        tc.remark
+    FROM
+        teacher_course tc
+    INNER JOIN staff_info si ON si.staff_code = tc.staff_no
+    INNER JOIN course_info ci ON ci.course_code = tc.course_no
+    INNER JOIN class_info cli ON cli.class_no = tc.class_no
+    INNER JOIN classroom_info room ON room.classroom_number = tc.classroom_no
+    WHERE
+        tc.state = 'A'
+    AND si.state = 'A'
+    AND ci.state = 'A'
+    AND cli.state = 'A'
+    AND room.state = 'A'
+    <if test="classNo != null">
+      and LOCATE(#{classNo},tc.class_no)
+    </if>
+    <if test="courseNo != null">
+      and LOCATE(#{courseNo},tc.course_no)
+    </if>
+    <if test="staffNo != null">
+      and LOCATE(#{staffNo},tc.staff_no)
+    </if>
+    <if test="classroomNo != null">
+      and  LOCATE(#{classroomNo},tc.classroom_no)
+    </if>
+    ORDER BY tc.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from teacher_course
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update teacher_course
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE teacher_course
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.TeacherCourse" >
+    insert into teacher_course
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="staffNo != null" >
+        staff_no,
+      </if>
+      <if test="courseNo != null" >
+        course_no,
+      </if>
+      <if test="classNo != null" >
+        class_no,
+      </if>
+      <if test="classroomNo != null" >
+        classroom_no,
+      </if>
+      <if test="classTime != null" >
+        class_time,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="staffNo != null" >
+        #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNo != null" >
+        #{classroomNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classTime != null" >
+        #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.TeacherCourse" >
+    update teacher_course
+    <set >
+      <if test="staffNo != null" >
+        staff_no = #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        course_no = #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        class_no = #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNo != null" >
+        classroom_no = #{classroomNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classTime != null" >
+        class_time = #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <insert id="insertCoursePlan" parameterType="com.example.demo.entity.CoursePlan">
+    insert into teacher_course
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="staffNo != null" >
+        staff_no,
+      </if>
+      <if test="courseNo != null" >
+        course_no,
+      </if>
+      <if test="classNo != null" >
+        class_no,
+      </if>
+      <if test="classroomNo != null" >
+        classroom_no,
+      </if>
+      <if test="classTime != null" >
+        class_time,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="staffNo != null" >
+        #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNo != null" >
+        #{classroomNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classTime != null" >
+        #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

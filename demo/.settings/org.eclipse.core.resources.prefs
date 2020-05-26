@@ -1,0 +1,7 @@
+eclipse.preferences.version=1
+encoding//src/config/jdbc.properties=UTF-8
+encoding//src/resource=UTF-8
+encoding//src/resource/file.properties=UTF-8
+encoding//src/resource/jwt.properties=UTF-8
+encoding//src/resource/qcloudSms.properties=UTF-8
+encoding//src/resource/test.properties=UTF-8

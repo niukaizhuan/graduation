@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.SchoolTeachBuildInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.SchoolTeachBuildInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="school_no" property="schoolNo" jdbcType="INTEGER" />
+    <result column="teach_build_no" property="teachBuildNo" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_date" property="stateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, school_no, teach_build_no, remark, state, state_date
+  </sql>
+
+  <select id="listBySchoolTeachBuildInfo" parameterType="com.example.demo.entity.SchoolTeachBuildInfo"
+          resultMap="BaseResultMap">
+      SELECT
+	st.id,
+	st.school_no,
+	si.school_name AS schoolName,
+	st.teach_build_no,
+	tb.teach_build_name AS teachBuildName,
+	tb.teach_build_number AS teachBuildNumber,
+	st.remark
+  FROM
+      school_teach_build_info st
+  INNER JOIN school_info si ON si.id = st.school_no
+  INNER JOIN teach_build_info tb ON tb.id = st.teach_build_no
+  WHERE
+      st.state = 'A'
+  AND si.state = 'A'
+  AND tb.state = 'A'
+    <if test="schoolNo != null">
+      and st.school_no = #{schoolNo,jdbcType=INTEGER}
+    </if>
+    <if test="teachBuildNo != null">
+      and st.teach_build_no = #{teachBuildNo,jdbcType=INTEGER}
+    </if>
+    ORDER BY st.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from school_teach_build_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update school_teach_build_info
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE school_teach_build_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.SchoolTeachBuildInfo" >
+    insert into school_teach_build_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="schoolNo != null" >
+        school_no,
+      </if>
+      <if test="teachBuildNo != null" >
+        teach_build_no,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="schoolNo != null" >
+        #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="teachBuildNo != null" >
+        #{teachBuildNo,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.SchoolTeachBuildInfo" >
+    update school_teach_build_info
+    <set >
+      <if test="schoolNo != null" >
+        school_no = #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="teachBuildNo != null" >
+        teach_build_no = #{teachBuildNo,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=CHAR},
+      </if>
+      <if test="stateDate != null" >
+        state_date = #{stateDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+
+  <select id="selectByTeachBuildNo" resultType="java.lang.String" parameterType="java.lang.String">
+      select teach_build_no
+      from school_teach_build_info
+      where school_no = #{schoolNo,jdbcType=VARCHAR}
+  </select>
+</mapper>

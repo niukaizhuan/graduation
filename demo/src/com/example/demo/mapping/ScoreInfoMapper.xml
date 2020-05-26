@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.ScoreInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.ScoreInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="school_info_id" property="schoolInfoId" jdbcType="INTEGER" />
+    <result column="class_info_id" property="classInfoId" jdbcType="INTEGER" />
+    <result column="student_info_id" property="studentInfoId" jdbcType="INTEGER" />
+    <result column="assessment_info_id" property="assessmentInfoId" jdbcType="INTEGER" />
+    <result column="student_state" property="studentState" jdbcType="CHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_data" property="stateData" jdbcType="TIMESTAMP" />
+    <result column="created_data" property="createdData" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, school_info_id, class_info_id, student_info_id, assessment_info_id, student_state,remark,
+    state, state_data, created_data
+  </sql>
+
+
+    <!--导出成绩查询成绩-->
+    <select id="exportScoreInfo" parameterType="com.example.demo.entity.ScoreInfo"
+            resultMap="BaseResultMap">
+        SELECT
+        s.id,
+        s.school_info_id,
+        s.class_info_id,
+        s.student_info_id,
+        s.assessment_info_id,
+        s.student_state,
+        s.remark,
+        si.school_name AS schoolName,
+        ci.class_name AS className,
+        stu.student_name AS studentName,
+        stu.student_number AS studentNumber,
+        ai.homework_assessment AS homeworkAssessment,
+        ai.practical_examination AS practicalExamination,
+        ai.experimental_examination AS experimentalExamination,
+        ai.final_examination AS finalExamination
+        FROM
+        score_info s
+        INNER JOIN school_info si ON si.id = s.school_info_id
+        INNER JOIN class_info ci ON ci.id = s.class_info_id
+        INNER JOIN student_info stu ON stu.id = s.student_info_id
+        INNER JOIN assessment_info ai ON ai.id = s.assessment_info_id
+        WHERE
+        1 = 1
+        AND s.state = 'A'
+        AND si.state = 'A'
+        AND ci.state = 'A'
+        AND stu.state = 'A'
+        AND ai.state = 'A'
+        <if test="schoolInfoId != null">
+            and s.school_info_id = #{schoolInfoId,jdbcType=INTEGER}
+        </if>
+        <if test="classInfoId != null">
+            and s.class_info_id = #{classInfoId,jdbcType=INTEGER}
+        </if>
+        ORDER BY
+        s.class_info_id
+    </select>
+
+    <!--过滤查询-->
+  <select id="listByScoreInfo" parameterType="com.example.demo.entity.ScoreInfo"
+          resultMap="BaseResultMap">
+          SELECT
+          s.id,
+          s.school_info_id,
+          s.class_info_id,
+          s.student_info_id,
+          s.assessment_info_id,
+          s.student_state,
+          s.remark,
+          s.state_data,
+          s.created_data,
+          si.school_name AS schoolName,
+          ci.class_name AS className,
+          stu.student_name AS studentName,
+          stu.student_number AS studentNumber,
+          ai.homework_assessment AS homeworkAssessment,
+          ai.practical_examination AS practicalExamination,
+          ai.experimental_examination AS experimentalExamination,
+          ai.final_examination AS finalExamination
+      FROM
+          score_info s
+      INNER JOIN school_info si ON si.id = s.school_info_id
+      INNER JOIN class_info ci ON ci.id = s.class_info_id
+      INNER JOIN student_info stu ON stu.id = s.student_info_id
+      INNER JOIN assessment_info ai ON ai.id = s.assessment_info_id
+      WHERE
+          1 = 1
+      AND s.state = 'A'
+      AND si.state = 'A'
+      AND ci.state = 'A'
+      AND stu.state = 'A'
+      AND ai.state = 'A'
+    <if test="schoolInfoId != null">
+      and s.school_info_id = #{schoolInfoId,jdbcType=INTEGER}
+    </if>
+    <if test="classInfoId != null">
+      and s.class_info_id = #{classInfoId,jdbcType=INTEGER}
+    </if>
+    <if test="studentInfoId != null">
+      and s.student_info_id = #{studentInfoId,jdbcType=INTEGER}
+    </if>
+      ORDER BY
+          s.id
+  </select>
+
+    <select id="countByScoreInfo" parameterType="com.example.demo.entity.ScoreInfo"
+            resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        score_info
+        WHERE
+        state = 'A'
+        AND student_info_id = #{studentInfoId,jdbcType=INTEGER}
+        <if test="id != null">
+            AND id != #{id,jdbcType=INTEGER}
+        </if>
+    </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from score_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    UPDATE score_info
+		SET state = 'X'
+	  WHERE
+		  id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE score_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.ScoreInfo" >
+    insert into score_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="schoolInfoId != null" >
+        school_info_id,
+      </if>
+      <if test="classInfoId != null" >
+        class_info_id,
+      </if>
+      <if test="studentInfoId != null" >
+        student_info_id,
+      </if>
+      <if test="assessmentInfoId != null" >
+        assessment_info_id,
+      </if>
+      <if test="studentState != null" >
+        student_state,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="schoolInfoId != null" >
+        #{schoolInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="classInfoId != null" >
+        #{classInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="studentInfoId != null" >
+        #{studentInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="assessmentInfoId != null" >
+        #{assessmentInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="studentState != null" >
+        #{studentState,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.ScoreInfo" >
+    update score_info
+    <set >
+      <if test="schoolInfoId != null" >
+        school_info_id = #{schoolInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="classInfoId != null" >
+        class_info_id = #{classInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="studentInfoId != null" >
+        student_info_id = #{studentInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="assessmentInfoId != null" >
+        assessment_info_id = #{assessmentInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="studentState != null" >
+        student_state = #{studentState,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+    <select id="listByAssessmentId" parameterType="java.lang.Integer" resultType="java.util.Map">
+        select
+          assessment_info_id
+        from score_info
+         where id in
+        <foreach item="id" index="index" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <insert id="importExcelXLSXScore" parameterType="java.util.List">
+        INSERT INTO score_info (
+        id,
+        school_info_id,
+        class_info_id,
+        student_info_id,
+        assessment_info_id,
+        student_state,
+        remark
+        )
+        VALUES
+        <foreach collection = "list" index = "list" item = "item" separator=","> (
+            #{item.id,jdbcType=INTEGER},
+            #{item.schoolInfoId,jdbcType=INTEGER},
+            #{item.classInfoId,jdbcType=INTEGER},
+            #{item.studentInfoId,jdbcType=INTEGER},
+            #{item.assessmentInfoId,jdbcType=INTEGER},
+            #{item.studentState,jdbcType=CHAR},
+            #{item.remark,jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+</mapper>

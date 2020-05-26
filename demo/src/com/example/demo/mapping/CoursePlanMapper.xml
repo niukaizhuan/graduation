@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.CoursePlanMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.CoursePlan" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="school_no" property="schoolNo" jdbcType="VARCHAR" />
+    <result column="class_no" property="classNo" jdbcType="VARCHAR" />
+    <result column="course_no" property="courseNo" jdbcType="VARCHAR" />
+    <result column="staff_no" property="staffNo" jdbcType="VARCHAR" />
+    <result column="classroom_no" property="classroomNo" jdbcType="VARCHAR" />
+    <result column="term_name" property="termName" jdbcType="VARCHAR" />
+    <result column="weeks_sum" property="weeksSum" jdbcType="INTEGER" />
+    <result column="class_time" property="classTime" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_date" property="stateDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, school_no, class_no, course_no, staff_no, classroom_no, term_name, weeks_sum,
+    class_time, remark, state, state_date
+  </sql>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+       SELECT
+          cp.id,
+          cp.school_no,
+          si.school_name AS schoolName,
+          cp.class_no,
+          ci.class_name AS className,
+          cp.course_no,
+          coi.course_code AS courseCode,
+          coi.course_name AS courseName,
+          cp.staff_no,
+          sti.staff_code AS staffCode,
+          sti.staff_name AS staffName,
+          cp.term_name,
+          yt.term_name AS termName,
+          cp.classroom_no,
+          room.classroom_number AS classroomNumber,
+          cp.weeks_sum,
+          cp.class_time,
+          cp.remark,
+          room.teach_build_number,
+          tbi.teach_build_name AS teachBuildName
+      FROM
+          course_plan cp
+      INNER JOIN school_info si ON si.school_no = cp.school_no
+      INNER JOIN class_info ci ON ci.class_no = cp.class_no
+      INNER JOIN course_info coi ON coi.course_code = cp.course_no
+      INNER JOIN staff_info sti ON sti.staff_code = cp.staff_no
+      INNER JOIN year_term yt ON yt.term_name = cp.term_name
+      INNER JOIN classroom_info room ON room.classroom_number = cp.classroom_no
+      INNER JOIN teach_build_info tbi ON room.teach_build_number = tbi.teach_build_number
+      WHERE
+          cp.state = 'A'
+      AND yt.state = 'A'
+      AND si.state = 'A'
+      AND ci.state = 'A'
+      AND coi.state = 'A'
+      AND sti.state = 'A'
+      AND room.state = 'A'
+      ORDER BY
+          cp.id
+  </select>
+
+  <select id="listByCoursePlan" parameterType="com.example.demo.entity.CoursePlan"
+          resultMap="BaseResultMap">
+    SELECT
+    cp.id,
+    cp.school_no,
+    si.school_name AS schoolNmae,
+    cp.class_no,
+    ci.class_name AS className,
+    cp.course_no,
+    coi.course_code AS courseCode,
+    coi.course_name AS courseName,
+    cp.staff_no,
+    sti.staff_code AS staffCode,
+    sti.staff_name AS staffName,
+    cp.term_name,
+    yt.term_name AS termName,
+    cp.classroom_no,
+    room.classroom_number AS classroomNumber,
+    cp.weeks_sum,
+    cp.class_time,
+    cp.remark
+    FROM
+    course_plan cp
+    INNER JOIN school_info si ON si.school_no = cp.school_no
+    INNER JOIN class_info ci ON ci.class_no = cp.class_no
+    INNER JOIN course_info coi ON coi.course_code = cp.course_no
+    INNER JOIN staff_info sti ON sti.staff_code = cp.staff_no
+    INNER JOIN year_term yt ON yt.term_name = cp.term_name
+    INNER JOIN classroom_info room ON room.classroom_number = cp.classroom_no
+    WHERE
+    cp.state = 'A'
+    AND yt.state = 'A'
+    AND si.state = 'A'
+    AND ci.state = 'A'
+    AND coi.state = 'A'
+    AND sti.state = 'A'
+    AND room.state = 'A'
+    ORDER BY cp.id
+
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from course_plan
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer" >
+    update course_plan
+    set state = 'X'
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE course_plan
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+  <insert id="insert" parameterType="com.example.demo.entity.CoursePlan" >
+    insert into course_plan
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="schoolNo != null" >
+        school_no,
+      </if>
+      <if test="classNo != null" >
+        class_no,
+      </if>
+      <if test="courseNo != null" >
+        course_no,
+      </if>
+      <if test="staffNo != null" >
+        staff_no,
+      </if>
+      <if test="classroomNo != null" >
+        classroom_no,
+      </if>
+      <if test="termName != null" >
+        term_name,
+      </if>
+      <if test="weeksSum != null" >
+        weeks_sum,
+      </if>
+      <if test="classTime != null" >
+        class_time,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+      <if test="stateDate != null" >
+        state_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="schoolNo != null" >
+        #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="staffNo != null" >
+        #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNo != null" >
+        #{classroomNo,jdbcType=VARCHAR},
+      </if>
+      <if test="termName != null" >
+        #{termName,jdbcType=VARCHAR},
+      </if>
+      <if test="weeksSum != null" >
+        #{weeksSum,jdbcType=VARCHAR},
+      </if>
+      <if test="classTime != null" >
+        #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.CoursePlan" >
+    update course_plan
+    <set >
+      <if test="schoolNo != null" >
+        school_no = #{schoolNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classNo != null" >
+        class_no = #{classNo,jdbcType=VARCHAR},
+      </if>
+      <if test="courseNo != null" >
+        course_no = #{courseNo,jdbcType=VARCHAR},
+      </if>
+      <if test="staffNo != null" >
+        staff_no = #{staffNo,jdbcType=VARCHAR},
+      </if>
+      <if test="classroomNo != null" >
+        classroom_no = #{classroomNo,jdbcType=VARCHAR},
+      </if>
+      <if test="termName != null" >
+        term_name = #{termName,jdbcType=VARCHAR},
+      </if>
+      <if test="weeksSum != null" >
+        weeks_sum = #{weeksSum,jdbcType=VARCHAR},
+      </if>
+      <if test="classTime != null" >
+        class_time = #{classTime,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <update id="updateCoursePlan" parameterType="com.example.demo.entity.ClassTask">
+    update course_plan
+    set weeks_sum = #{weeksSum,jdbcType=INTEGER},
+      term_name = #{termName,jdbcType=VARCHAR}
+    where
+      school_no = #{schoolNo,jdbcType=VARCHAR}
+      and class_no = #{classNo,jdbcType=VARCHAR}
+      and course_no = #{courseNo,jdbcType=VARCHAR}
+      and staff_no = #{staffNo,jdbcType=VARCHAR}
+  </update>
+
+</mapper>

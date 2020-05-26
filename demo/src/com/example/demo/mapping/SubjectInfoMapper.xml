@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.demo.mapper.SubjectInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.example.demo.entity.SubjectInfo" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="subject_name" property="subjectName" jdbcType="VARCHAR" />
+    <result column="optionA" property="optiona" jdbcType="VARCHAR" />
+    <result column="optionB" property="optionb" jdbcType="VARCHAR" />
+    <result column="optionC" property="optionc" jdbcType="VARCHAR" />
+    <result column="optionD" property="optiond" jdbcType="VARCHAR" />
+    <result column="right_result" property="rightResult" jdbcType="VARCHAR" />
+    <result column="subject_score" property="subjectScore" jdbcType="INTEGER" />
+    <result column="course_id" property="courseId" jdbcType="INTEGER" />
+    <result column="class_info_id" property="classInfoId" jdbcType="INTEGER" />
+    <result column="subject_type" property="subjectType" jdbcType="CHAR" />
+    <result column="subject_easy" property="subjectEasy" jdbcType="CHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="CHAR" />
+    <result column="state_data" property="stateData" jdbcType="TIMESTAMP" />
+    <result column="created_data" property="createdData" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, subject_name, optionA, optionB, optionC, optionD, right_result, subject_score, 
+    subject_type, course_id, class_info_id, subject_easy, remark, state, state_data, created_data
+  </sql>
+
+	<select id="listByCourseId" resultMap="BaseResultMap"
+          parameterType="java.lang.Integer">
+    SELECT
+        DISTINCT *
+    FROM
+        subject_info
+    WHERE
+        course_id = #{courseId,jdbcType=INTEGER}
+    AND state = 'A'
+    ORDER BY
+        rand()
+    LIMIT #{n}
+  </select>
+  <select id="listSubjectInfo" resultMap="BaseResultMap">
+	   SELECT
+		    id,
+		    subject_name,
+		    optionA, optionB, optionC, optionD
+		FROM
+		    subject_info
+		WHERE
+		    state = 'A'
+		ORDER BY
+		    id
+	</select>
+  <select id="selectAll" parameterType="com.example.demo.entity.SubjectInfo"
+          resultMap="BaseResultMap">
+          SELECT
+          s.id,
+          s.subject_name,
+          s.optionA,
+          s.optionB,
+          s.optionC,
+          s.optionD,
+          s.right_result,
+          s.subject_score,
+          s.subject_type,
+          ci.course_name AS courseName ,
+          gi.grade_name AS gradeName,
+          s.course_id,
+          s.class_info_id,
+          s.subject_easy,
+          s.remark
+      FROM
+          `subject_info` s
+      INNER JOIN course_info ci ON ci.id = s.course_id
+      INNER JOIN grade_info gi ON gi.id = s.class_info_id
+      WHERE
+          s.state = 'A'
+      ORDER BY
+          s.id
+  </select>
+
+  <select id="listBySubjectInfo" parameterType="com.example.demo.entity.SubjectInfo"
+          resultMap="BaseResultMap">
+    SELECT
+      s.id,
+      s.subject_name,
+      s.optionA,
+      s.optionB,
+      s.optionC,
+      s.optionD,
+      s.right_result,
+      s.subject_score,
+      s.subject_type,
+      ci.course_name AS courseName,
+      gi.grade_name AS gradeName,
+      s.course_id,
+      s.class_info_id,
+      s.subject_easy,
+      s.remark,
+      s.state_data,
+      s.created_data
+    FROM
+    `subject_info` s
+    INNER JOIN course_info ci ON ci.id = s.course_id
+    INNER JOIN grade_info gi ON gi.id = s.class_info_id
+    WHERE
+    1 = 1
+    AND
+    s.state = 'A'
+    <if test="subjectName != null">
+      and LOCATE(#{subjectName},s.subject_name)
+    </if>
+    <if test="courseId != null">
+      and s.course_id = #{courseId,jdbcType=INTEGER}
+    </if>
+    <if test="classInfoId != null">
+      and s.class_info_id = #{classInfoId,jdbcType=INTEGER}
+    </if>
+    ORDER BY s.id
+  </select>
+
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from subject_info
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <update id="delete" parameterType="java.lang.Integer">
+		UPDATE subject_info
+		SET state = 'X'
+		WHERE
+			id = #{id,jdbcType=INTEGER}
+	</update>
+
+  <update id="deleteSelection" parameterType="java.util.List">
+    UPDATE subject_info
+    SET state = 'X'
+    WHERE
+    id IN
+    <!--每次从list集合中取出数据放入id中 -->
+    <foreach collection="list"  item="id"  index="index"
+             separator="," open="(" close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+  </update>
+
+
+  <insert id="insert" parameterType="com.example.demo.entity.SubjectInfo" >
+    insert into subject_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="subjectName != null" >
+        subject_name,
+      </if>
+      <if test="optiona != null" >
+        optionA,
+      </if>
+      <if test="optionb != null" >
+        optionB,
+      </if>
+      <if test="optionc != null" >
+        optionC,
+      </if>
+      <if test="optiond != null" >
+        optionD,
+      </if>
+      <if test="rightResult != null" >
+        right_result,
+      </if>
+      <if test="subjectScore != null" >
+        subject_score,
+      </if>
+      <if test="subjectType != null" >
+        subject_type,
+      </if>
+      <if test="courseId != null" >
+        course_id,
+      </if>
+      <if test="classInfoId != null" >
+        class_info_id,
+      </if>
+      <if test="subjectEasy != null" >
+        subject_easy,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="subjectName != null" >
+        #{subjectName,jdbcType=VARCHAR},
+      </if>
+      <if test="optiona != null" >
+        #{optiona,jdbcType=VARCHAR},
+      </if>
+      <if test="optionb != null" >
+        #{optionb,jdbcType=VARCHAR},
+      </if>
+      <if test="optionc != null" >
+        #{optionc,jdbcType=VARCHAR},
+      </if>
+      <if test="optiond != null" >
+        #{optiond,jdbcType=VARCHAR},
+      </if>
+      <if test="rightResult != null" >
+        #{rightResult,jdbcType=VARCHAR},
+      </if>
+      <if test="subjectScore != null" >
+        #{subjectScore,jdbcType=INTEGER},
+      </if>
+      <if test="subjectType != null" >
+        #{subjectType,jdbcType=CHAR},
+      </if>
+      <if test="courseId != null" >
+        #{courseId,jdbcType=INTEGER},
+      </if>
+      <if test="classInfoId != null" >
+        #{classInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="subjectEasy != null" >
+        #{subjectEasy,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="update" parameterType="com.example.demo.entity.SubjectInfo" >
+    update subject_info
+    <set >
+      <if test="subjectName != null" >
+        subject_name = #{subjectName,jdbcType=VARCHAR},
+      </if>
+      <if test="optiona != null" >
+        optionA = #{optiona,jdbcType=VARCHAR},
+      </if>
+      <if test="optionb != null" >
+        optionB = #{optionb,jdbcType=VARCHAR},
+      </if>
+      <if test="optionc != null" >
+        optionC = #{optionc,jdbcType=VARCHAR},
+      </if>
+      <if test="optiond != null" >
+        optionD = #{optiond,jdbcType=VARCHAR},
+      </if>
+      <if test="rightResult != null" >
+        right_result = #{rightResult,jdbcType=VARCHAR},
+      </if>
+      <if test="subjectScore != null" >
+        subject_score = #{subjectScore,jdbcType=INTEGER},
+      </if>
+      <if test="subjectType != null" >
+        subject_type = #{subjectType,jdbcType=CHAR},
+      </if>
+      <if test="courseId != null" >
+        course_id = #{courseId,jdbcType=INTEGER},
+      </if>
+      <if test="classInfoId != null" >
+        class_info_id = #{classInfoId,jdbcType=INTEGER},
+      </if>
+      <if test="subjectEasy != null" >
+        subject_easy = #{subjectEasy,jdbcType=CHAR},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="countBySubjectInfo" parameterType="com.example.demo.entity.SubjectInfo"
+          resultType="java.lang.Integer">
+    SELECT
+    count(*)
+    FROM
+    subject_info
+    WHERE
+    state = 'A'
+    AND subject_name = #{subjectName,jdbcType=VARCHAR}
+    <if test="id != null">
+      AND id != #{id,jdbcType=INTEGER}
+    </if>
+  </select>
+
+  <!--<insert id="insertByExcelList" parameterType="java.util.Map">-->
+    <!--INSERT INTO subject_info (-->
+    <!--id, subject_name, optionA, optionB, optionC, optionD, right_result, subject_score,-->
+    <!--subject_type, course_id, class_info_id, subject_easy, remark,-->
+    <!--)-->
+    <!--VALUES-->
+    <!--<foreach collection="subjectInfoList" item="item"  separator=",">-->
+      <!--(-->
+      <!--#{subjectName,jdbcType=VARCHAR},-->
+      <!--#{optiona,jdbcType=VARCHAR},-->
+      <!--#{optionb,jdbcType=VARCHAR},-->
+      <!--#{optionc,jdbcType=VARCHAR},-->
+      <!--#{optiond,jdbcType=VARCHAR},-->
+      <!--#{rightResult,jdbcType=VARCHAR},-->
+      <!--#{subjectScore,jdbcType=INTEGER},-->
+      <!--#{subjectType,jdbcType=CHAR},-->
+      <!--#{courseId,jdbcType=INTEGER},-->
+      <!--#{classInfoId,jdbcType=INTEGER},-->
+      <!--#{subjectEasy,jdbcType=CHAR},-->
+      <!--#{remark,jdbcType=VARCHAR},-->
+      <!--)-->
+    <!--</foreach>-->
+    <!--ON DUPLICATE KEY UPDATE-->
+  <!--</insert>-->
+
+  <insert id="insertData" parameterType="java.util.List">
+    INSERT INTO subject_info (
+        id,
+        subject_name,
+        optionA,
+        optionB,
+        optionC,
+        optionD,
+        right_result,
+        subject_score,
+        subject_type,
+        subject_easy,
+        course_id,
+        class_info_id
+    )
+    VALUES
+    <foreach collection = "list" index = "list" item = "item" separator=","> (
+      #{item.id,jdbcType=INTEGER},
+      #{item.subjectName,jdbcType=VARCHAR},
+      #{item.optiona,jdbcType=VARCHAR},
+      #{item.optionb,jdbcType=VARCHAR},
+      #{item.optionc,jdbcType=VARCHAR},
+      #{item.optiond,jdbcType=VARCHAR},
+      #{item.rightResult,jdbcType=VARCHAR},
+      #{item.subjectScore,jdbcType=INTEGER},
+      #{item.subjectType,jdbcType=CHAR},
+      #{item.subjectEasy,jdbcType=CHAR},
+      #{item.courseId,jdbcType=INTEGER},
+      #{item.classInfoId,jdbcType=INTEGER}
+      )
+      </foreach>
+  </insert>
+</mapper>
